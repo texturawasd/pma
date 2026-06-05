@@ -100,31 +100,10 @@ const char *get_unelevated_update_command(const char *pkgmgr) {
     return unelevated_update_command;
 }
 
-
-// function to insert the proper elevator (doas or sudo) into the unelevated (unelevated) update command
-const char *get_elevated_update_command(const char *pkgmgr) {
-    const char *unelevated_update_command = get_unelevated_update_command(pkgmgr);
-    return elevate_command(unelevated_update_command);
-}
-
 // function to build a update command accordingly with the elevator for the given pkgmgr
 const char *build_final_update_command(const char *pkgmgr)
 {
-    const char *elevated_update_command = get_elevated_update_command(
-        get_unelevated_update_command(pkgmgr));
-    const char *elevator = determine_elevator();
-
-    size_t len = snprintf(NULL, 0, "%s", elevated_update_command) + 1;
-
-    char *final_update_command = malloc(len);
-    if (!final_update_command) {
-        return NULL;
-    }
-
-    snprintf(final_update_command, len, "%s %s",
-             elevator, elevated_update_command);
-
-    return final_update_command;
+    return elevate_command(get_unelevated_update_command(pkgmgr));
 }
 
 int main(void) {
