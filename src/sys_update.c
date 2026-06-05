@@ -8,7 +8,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-#include "have.c" // command_exists()
+#include "common_utils/have.c" // command_exists()
+#include "common_utils/elevate.c" // elevate()
 
 /* determine which privilege elevator program, sudo or doas, is available. checks for sudo first, then doas */
 const char* determine_elevator() {
@@ -62,70 +63,76 @@ const char *determine_package_manager() {
     return pkgmgr;
 }
 
-// Returns the update command for the given pkgmgr (you may need to insert sudo)
-const char *get_bare_update_command(const char *pkgmgr) {
+// Returns the (not yet elevated) update command for the given pkgmgr (you may need to insert sudo)
+const char *get_unelevated_update_command(const char *pkgmgr) {
 
-    const char *bare_update_command = NULL;
+    const char *unelevated_update_command = NULL;
 
     // first handle flatpak and snap
     if (strcmp(pkgmgr, "flatpak") == 0) {
-        bare_update_command = "flatpak update";
+        unelevated_update_command = "flatpak update";
     } else if (strcmp(pkgmgr, "snap") == 0) {
-        bare_update_command = "snap refresh";
+        unelevated_update_command = "snap refresh";
     }
 
     /* linux system pkgmgrs */
 #if defined(__linux__)
     if (strcmp(pkgmgr, "pacman") == 0) {
-        bare_update_command = "pacman -Syu";
+        unelevated_update_command = "pacman -Syu";
     } else if (strcmp(pkgmgr, "apt") == 0) {
-        bare_update_command = "apt-get update && apt-get dist-upgrade -y";
+        unelevated_update_command = "apt-get update && apt-get dist-upgrade -y";
     } else if (strcmp(pkgmgr, "dnf") == 0) {
-        bare_update_command = "dnf upgrade -y";
+        unelevated_update_command = "dnf upgrade -y";
     } else if (strcmp(pkgmgr, "zypper") == 0) {
-        bare_update_command = "zypper ref && zypper dup -y";
+        unelevated_update_command = "zypper ref && zypper dup -y";
     } else if (strcmp(pkgmgr, "apk") == 0) {
-        bare_update_command = "apk update && apk upgrade";
+        unelevated_update_command =  "apk update && apk upgrade";
     } else if (strcmp(pkgmgr, "xbps") == 0) {
-        bare_update_command = "xbps-install -Syu";
+        unelevated_update_command = "xbps-install -Syu";
     } else if (strcmp(pkgmgr, "emerge") == 0) {
-        bare_update_command = "emaint sync -a && emerge --update --deep --with-bdeps=y @world";
+        unelevated_update_command = "emaint sync -a && emerge --update --deep --with-bdeps=y @world";
     } else if (strcmp(pkgmgr, "eopkg") == 0) {
-        bare_update_command = "eopkg up -y";
+        unelevated_update_command = "eopkg up -y";
     } else if (strcmp(pkgmgr, "nix") == 0) {
-        bare_update_command = "nix-channel --update && nixos-rebuild";
+        unelevated_update_command = "nix-channel --update && nixos-rebuild";
     } else if (strcmp(pkgmgr, "guix") == 0) {
-        bare_update_command = "guix pull && guix system reconfigure";
+        unelevated_update_command = "guix pull && guix system reconfigure";
     } else if (strcmp(pkgmgr, "urpmi") == 0) {
-        bare_update_command = "urpmi.update -a && urpmi --auto-select --auto";
+        unelevated_update_command = "urpmi.update -a && urpmi --auto-select --auto";
     } else if (strcmp(pkgmgr, "swupd") == 0) {
-        bare_update_command = "swupd update";
+        unelevated_update_command = "swupd update";
     }
 #elif defined(__FreeBSD__)
-    bare_update_command = "freebsd-update fetch install && pkg update && pkg upgrade -y";
+    unelevated_update_command = "freebsd-update fetch install && pkg update && pkg upgrade -y";
 #endif
-    return bare_update_command;
+    return unelevated_update_command;
 }
 
+
+// function to insert the proper elevator (doas or sudo) into the unelevated (unelevated) update command
+const char *get_elevated_update_command(const char *pkgmgr) {
+    const char *unelevated_update_command = get_unelevated_update_command(pkgmgr);
+    return elevate(unelevated_update_command);
+}
 
 // function to build a update command accordingly with the elevator for the given pkgmgr
 const char *build_final_update_command(const char *pkgmgr)
 {
-    const char *update_command = get_bare_update_command(pkgmgr);
+    const char *elevated_update_command = get_elevated_update_command(
+        get_unelevated_update_command(pkgmgr));
     const char *elevator = determine_elevator();
 
-    size_t len = snprintf(NULL, 0, "%s %s",
-                          elevator, update_command) + 1;
+    size_t len = snprintf(NULL, 0, "%s", elevated_update_command) + 1;
 
-    char *cmd = malloc(len);
-    if (!cmd) {
+    char *final_update_command = malloc(len);
+    if (!final_update_command) {
         return NULL;
     }
 
-    snprintf(cmd, len, "%s %s",
-             elevator, update_command);
+    snprintf(final_update_command, len, "%s %s",
+             elevator, elevated_update_command);
 
-    return cmd;
+    return final_update_command;
 }
 
 int main(void) {
