@@ -112,3 +112,30 @@ const char *build_final_update_command(const char *pkgmgr)
 {
     return elevate_command(get_unelevated_update_command(pkgmgr));
 }
+
+static const bool am_i_in_arch_or_a_derivative_or_otherwise_is_pacman_available() {
+    if (strcmp(determine_package_manager(), "pacman") == 0) {
+        return true; /* pacman is available so i must be */
+    }
+    return false;
+}
+
+const bool aur() {
+    if (am_i_in_arch_or_a_derivative_or_otherwise_is_pacman_available()) {
+        // not gonna aur-help, check for available aur helpers
+        if (command_exists("yay") || command_exists("paru")) {
+            return true;
+        }
+    }
+    return false;
+}
+
+const char *get_aur_helper() {
+    const char *AUR_HELPER = "none";
+    if (command_exists("yay")) {
+        AUR_HELPER = "yay";
+    } else if (command_exists("paru")) {
+        AUR_HELPER = "paru";
+    }
+    return AUR_HELPER;
+}
