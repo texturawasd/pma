@@ -1,3 +1,7 @@
 #!/usr/bin/env sh
 
-cc src/main.c -o sys_update
+cc -o pma src/main.c \
+    common_utils/src/parsing_utils.c \
+    common_utils/src/have.c \
+    common_utils/src/args.c \
+    common_utils/src/strings.c
