@@ -1,12 +1,11 @@
 #include <unistd.h>
 
-#include "../common_utils/have.h" // command_exists()
 #include "../common_utils/elevate.h" // elevate()
+#include "../common_utils/have.h"    // command_exists()
 
 /* include elevate implementation so the single TU built by build.sh
     provides elevate_command() at link time */
 #include "../common_utils/src/elevate.c"
-
 
 /* determine the package manager(s) available. */
 const char *determine_package_manager() {
@@ -25,7 +24,7 @@ const char *determine_package_manager() {
     pkgmgr = "softwareupdate";
 #elif defined(__linux__)
     /* linux distros */
-	if (command_exists("pacman")) {
+    if (command_exists("pacman")) {
         pkgmgr = "pacman";
     } else if (command_exists("apt-get") || command_exists("apt")) {
         pkgmgr = "apt";
@@ -81,7 +80,7 @@ const char *get_unelevated_update_command(const char *pkgmgr) {
     } else if (strcmp(pkgmgr, "zypper") == 0) {
         unelevated_update_command = "zypper ref && zypper dup -y";
     } else if (strcmp(pkgmgr, "apk") == 0) {
-        unelevated_update_command =  "apk update && apk upgrade";
+        unelevated_update_command = "apk update && apk upgrade";
     } else if (strcmp(pkgmgr, "xbps") == 0) {
         unelevated_update_command = "xbps-install -Syu";
     } else if (strcmp(pkgmgr, "emerge") == 0) {
@@ -146,8 +145,7 @@ const char *get_aur_helper() {
 
 const char *get_unelevated_install_command(const char *pkgmgr) {
     const char *unelevated_install_command = NULL;
-    #if defined(__linux__)
+#if defined(__linux__)
 
-    #endif
-
+#endif
 }

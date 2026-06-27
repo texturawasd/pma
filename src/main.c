@@ -7,14 +7,14 @@
  * Arch Linux
  * Ubuntu
  * FreeBSD
-*/
+ */
 
-#include <stdio.h>
-#include <stdbool.h>
-#include <unistd.h>
-#include "sys_update.c"
 #include "../common_utils/args.h"
 #include "../common_utils/parsing_utils.h"
+#include "sys_update.c"
+#include <stdbool.h>
+#include <stdio.h>
+#include <unistd.h>
 
 int main(int argc, char **argv) {
 
@@ -44,6 +44,4 @@ int main(int argc, char **argv) {
         puts("aborting.");
     }
     return 0;
-
 }
-

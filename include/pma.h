@@ -8,6 +8,8 @@
 #ifndef PMA_H
 #define PMA_H
 
+#include <stdbool.h>
+
 #ifdef __linux__ /* linux (arch or derivatives) specific */
 
 /* true if an "yay" or "paru" are available */
@@ -45,7 +47,6 @@ const char *get_unelevated_update_command(const char *pkgmgr);
 
 /* build the final update command, potentially elevating it if necessary */
 const char *build_final_update_command(const char *pkgmgr);
-
 
 #if 0 // unimplemented
 const char *package_install_command(const char *pkgmgr, const char *package_name);
