@@ -195,3 +195,52 @@ const char *get_unelevated_install_command(const char *pkgmgr) {
 #endif
     return unelevated_install_command;
 }
+
+// Returns the (not yet elevated) install command for the given pkgmgr (you may need to insert sudo)
+const char *get_unelevated_remove_command(const char *pkgmgr) {
+
+    const char *unelevated_remove_command = NULL;
+
+    // first handle flatpak and snap
+    if (strcmp(pkgmgr, "flatpak") == 0) {
+        unelevated_remove_command = "flatpak install";
+    } else if (strcmp(pkgmgr, "snap") == 0) {
+        unelevated_remove_command = "snap install";
+    }
+
+    /* linux system pkgmgrs */
+#if defined(__linux__)
+    if (strcmp(pkgmgr, "pacman") == 0) {
+        unelevated_remove_command = "pacman -Rns --noconfirm";
+    } else if (strcmp(pkgmgr, "apt") == 0) {
+        unelevated_remove_command = "apt-get remove -y";
+    } else if (strcmp(pkgmgr, "dnf") == 0) {
+        unelevated_remove_command = "dnf remove -y";
+    } else if (strcmp(pkgmgr, "zypper") == 0) {
+        unelevated_remove_command = "zypper remove -y";
+    } else if (strcmp(pkgmgr, "apk") == 0) {
+        unelevated_remove_command = "apk del";
+    } else if (strcmp(pkgmgr, "xbps") == 0) {
+        unelevated_remove_command = "xbps-remove -y";
+    } else if (strcmp(pkgmgr, "emerge") == 0) {
+        unelevated_remove_command = "emerge --deselect";
+    } else if (strcmp(pkgmgr, "eopkg") == 0) {
+        unelevated_remove_command = "eopkg remove -y";
+    } else if (strcmp(pkgmgr, "nix") == 0) {
+        unelevated_remove_command = "nix-env -e";
+    } else if (strcmp(pkgmgr, "guix") == 0) {
+        unelevated_remove_command = "guix remove";
+    } else if (strcmp(pkgmgr, "urpmi") == 0) {
+        unelevated_remove_command = "urpme --auto";
+    } else if (strcmp(pkgmgr, "swupd") == 0) {
+        unelevated_remove_command = "swupd bundle-remove";
+    }
+#elif defined(__FreeBSD__)
+    unelevated_install_command = "pkg remove";
+#elif defined(__OpenBSD__)
+    unelevated_install_command = "pkg_delete";
+#elif defined(__APPLE__)
+    unelevated_install_command = "I don't know";
+#endif
+    return unelevated_remove_command;
+}

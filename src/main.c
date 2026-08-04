@@ -13,8 +13,8 @@
 #include "../common_utils/args.h"
 #include "../common_utils/parsing_utils.h"
 #include "aux.c"
-#include "sys_update.c"
 #include "sys_ins_rem.c"
+#include "sys_update.c"
 #include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -52,8 +52,13 @@ int main(int argc, char **argv) {
 
         /* Remove a package */
     } else if (arg_is_in_list(argv[1], _remove_list)) {
-        fprintf(stderr, "Removing packages is not yet implemented, exiting.\n");
-        return -1;
+        if (argc < 3) {
+            fprintf(stderr,
+                    "Too few arguments. To install a package, pass a package name");
+            return -1;
+        }
+        package_remove(argv[2], "system");
+        return 0;
     }
 
     /* no args, update the system */

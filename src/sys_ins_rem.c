@@ -38,6 +38,10 @@ int package_install(const char *pkg_name, const char *from) {
             print_command_output(out, err);
             free(out);
             free(err);
+            if (status != 0) {
+                fprintf(stderr, "Operation failed.");
+                exit(status);
+            }
             printf("-> Installed %s\n", pkg_name);
         }
 
@@ -46,9 +50,50 @@ int package_install(const char *pkg_name, const char *from) {
                 "Invalid 'from'. Can be 'flatpak', 'snap', or 'system'.");
         return -1;
     }
-
-    const char *pkgmgr = determine_package_manager();
+    return 0;
 }
 
-int package_remove(const char *pkg_name) {
+int package_remove(const char *pkg_name, const char *from) {
+
+    if (!pkg_name || !from) {
+        return -1;
+    }
+
+    if (strcmp(from, "flatpak") == 0) {
+        /* Remove a pkg from flatpak */
+        fprintf(stderr, "Not yet implemented");
+        exit(4);
+
+    } else if (strcmp(from, "snap") == 0) {
+        /* Remove a pkg from snap */
+        fprintf(stderr, "Not yet implemented");
+        exit(4);
+
+    } else if (strcmp(from, "system") == 0) {
+        /* Remove using system packange manager*/
+        str install_command = str_create(get_unelevated_remove_command(determine_package_manager()));
+        str_append(&install_command, " ");
+        str_append(&install_command, pkg_name);
+        str_prepend(&install_command, " ");
+        str_prepend(&install_command, determine_elevator());
+
+        char *out = NULL, *err = NULL;
+        int status = -1;
+        if (run_command_via_exec(install_command.data, &out, &err, &status) == 0) {
+            print_command_output(out, err);
+            free(out);
+            free(err);
+            if (status != 0) {
+                fprintf(stderr, "Operation failed.");
+                exit(status);
+            }
+            printf("-> Removed %s\n", pkg_name);
+        }
+
+    } else {
+        fprintf(stderr,
+                "Invalid 'from'. Can be 'flatpak', 'snap', or 'system'.");
+        return -1;
+    }
+    return 0;
 }

@@ -10,8 +10,9 @@ void do_args(int argc, char **argv) {
         printf("pma " PMA_VERSION " - texturawasd\n"
                "Compiled on %s at %s\n",
                __DATE__, __TIME__ "\nCommands:\n"
-                                  "\tupdate - update the system"
-
+                                  "\tupdate            - update the system\n"
+                                  "\tinstall <package> - install a package with the system package manager\n"
+                                  "\tremove <package>  - remove a package with the system package manager\n"
         );
         exit(0);
     }
