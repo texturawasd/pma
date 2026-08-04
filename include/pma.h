@@ -50,7 +50,6 @@ const char *get_unelevated_update_command(const char *pkgmgr);
 /* build the final update command, potentially elevating it if necessary */
 const char *build_final_update_command(const char *pkgmgr);
 
-
 int package_install(const char *pkg_name, const char *from);
 int package_remove(const char *pkg_name);
 

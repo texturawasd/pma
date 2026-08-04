@@ -1,13 +1,13 @@
-#include <unistd.h>
 #include <stdbool.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "../common_utils/elevate.h" // elevate()
 #include "../common_utils/have.h"    // command_exists()
 
 /* include elevate implementation so the single TU built by build.sh
     provides elevate_command() at link time */
-//#include "../common_utils/src/elevate.c"
+// #include "../common_utils/src/elevate.c"
 
 /* determine the package manager(s) available. */
 const char *determine_package_manager() {
@@ -145,4 +145,53 @@ const char *get_aur_helper() {
         AUR_HELPER = "paru";
     }
     return AUR_HELPER;
+}
+
+// Returns the (not yet elevated) install command for the given pkgmgr (you may need to insert sudo)
+const char *get_unelevated_install_command(const char *pkgmgr) {
+
+    const char *unelevated_install_command = NULL;
+
+    // first handle flatpak and snap
+    if (strcmp(pkgmgr, "flatpak") == 0) {
+        unelevated_install_command = "flatpak install";
+    } else if (strcmp(pkgmgr, "snap") == 0) {
+        unelevated_install_command = "snap install";
+    }
+
+    /* linux system pkgmgrs */
+#if defined(__linux__)
+    if (strcmp(pkgmgr, "pacman") == 0) {
+        unelevated_install_command = "pacman -S --needed --noconfirm";
+    } else if (strcmp(pkgmgr, "apt") == 0) {
+        unelevated_install_command = "apt-get install -y";
+    } else if (strcmp(pkgmgr, "dnf") == 0) {
+        unelevated_install_command = "dnf install -y";
+    } else if (strcmp(pkgmgr, "zypper") == 0) {
+        unelevated_install_command = "zypper install -y";
+    } else if (strcmp(pkgmgr, "apk") == 0) {
+        unelevated_install_command = "apk add";
+    } else if (strcmp(pkgmgr, "xbps") == 0) {
+        unelevated_install_command = "xbps-install -y";
+    } else if (strcmp(pkgmgr, "emerge") == 0) {
+        unelevated_install_command = "emerge";
+    } else if (strcmp(pkgmgr, "eopkg") == 0) {
+        unelevated_install_command = "eopkg install -y";
+    } else if (strcmp(pkgmgr, "nix") == 0) {
+        unelevated_install_command = "nix-env -iA";
+    } else if (strcmp(pkgmgr, "guix") == 0) {
+        unelevated_install_command = "guix install";
+    } else if (strcmp(pkgmgr, "urpmi") == 0) {
+        unelevated_install_command = "urpmi --auto";
+    } else if (strcmp(pkgmgr, "swupd") == 0) {
+        unelevated_install_command = "swupd bundle-add";
+    }
+#elif defined(__FreeBSD__)
+    unelevated_install_command = "pkg install";
+#elif defined(__OpenBSD__)
+    unelevated_install_command = "pkg_add ";
+#elif defined(__APPLE__)
+    unelevated_install_command = "I don't know";
+#endif
+    return unelevated_install_command;
 }

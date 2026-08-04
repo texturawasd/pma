@@ -1,12 +1,10 @@
 #include "../common_utils/have.h" // command_exists()
-#include "../include/pma.h"
 #include "../common_utils/process_utils.h"
 #include "../common_utils/simple_strings.h"
+#include "../include/pma.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-
 
 int sys_update() {
 
@@ -55,7 +53,7 @@ int sys_update() {
      * in order to update with the AUR helper command (simpler) */
     if (aur()) {
         str aur_helper = str_create(get_aur_helper());
-        
+
         printf("-> Detected AUR helper: %s, updating the system\n", aur_helper.data);
         fflush(stdout);
         str_append(&aur_helper, " --noconfirm");

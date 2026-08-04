@@ -14,6 +14,7 @@
 #include "../common_utils/parsing_utils.h"
 #include "aux.c"
 #include "sys_update.c"
+#include "sys_ins_rem.c"
 #include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -38,12 +39,18 @@ int main(int argc, char **argv) {
         goto update;
         return 0;
 
-    /* Install a package*/
+        /* Install a package*/
     } else if (arg_is_in_list(argv[1], _install_list)) {
-        fprintf(stderr, "Installing packages is not yet implemented, exiting.\n");
-        return -1;
+        if (argc < 3) {
+            fprintf(stderr,
+                    "Too few arguments. To install a package, pass a package name");
+            return -1;
+        }
 
-    /* Remove a package */
+        package_install(argv[2], "system");
+        return 0;
+
+        /* Remove a package */
     } else if (arg_is_in_list(argv[1], _remove_list)) {
         fprintf(stderr, "Removing packages is not yet implemented, exiting.\n");
         return -1;
@@ -59,7 +66,7 @@ int main(int argc, char **argv) {
         puts("aborting.");
         exit(1);
     }
-    update:
+update:
     sys_update();
     return 0;
 }
