@@ -18,7 +18,7 @@ int sys_update() {
         puts("-> Updating snap...");
         char *out = NULL, *err = NULL;
         int status = -1;
-        const char *update_command_for_snap = build_final_update_command("snap");
+        const char *update_command_for_snap = "snap refresh";
         if (run_command_via_exec(update_command_for_snap, &out, &err, &status) == 0) {
             print_command_output(out, err);
             free(out);
@@ -29,13 +29,14 @@ int sys_update() {
             fprintf(stderr, "-> snap update failed with exit status %d\n", status);
             free(out);
             free(err);
+            exit(status);
         }
     }
     if (command_exists("flatpak")) {
         puts("-> Updating flatpak...");
         char *out = NULL, *err = NULL;
         int status = -1;
-        const char *update_command_for_flatpak = build_final_update_command("flatpak");
+        const char *update_command_for_flatpak = "flatpak update";
         if (run_command_via_exec(update_command_for_flatpak, &out, &err, &status) == 0) {
             print_command_output(out, err);
             free(out);
@@ -46,6 +47,7 @@ int sys_update() {
             fprintf(stderr, "-> flatpak update failed with exit status %d\n", status);
             free(out);
             free(err);
+            exit(status);
         }
     }
 

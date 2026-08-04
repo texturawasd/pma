@@ -26,7 +26,7 @@ int package_install(const char *pkg_name, const char *from);
 int package_remove(const char *pkg_name, const char *from);
 
 /*
- * general utility
+ * utilities
  */
 
 /* determine the system package manager by checking PATH */

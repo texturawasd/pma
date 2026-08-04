@@ -5,10 +5,6 @@
 #include "../common_utils/elevate.h" // elevate()
 #include "../common_utils/have.h"    // command_exists()
 
-/* include elevate implementation so the single TU built by build.sh
-    provides elevate_command() at link time */
-// #include "../common_utils/src/elevate.c"
-
 /* determine the package manager(s) available. */
 const char *determine_package_manager() {
 
@@ -64,13 +60,6 @@ const char *get_unelevated_update_command(const char *pkgmgr) {
 
     const char *unelevated_update_command = NULL;
 
-    // first handle flatpak and snap
-    if (strcmp(pkgmgr, "flatpak") == 0) {
-        unelevated_update_command = "flatpak update";
-    } else if (strcmp(pkgmgr, "snap") == 0) {
-        unelevated_update_command = "snap refresh";
-    }
-
     /* linux system pkgmgrs */
 #if defined(__linux__)
     if (strcmp(pkgmgr, "pacman") == 0) {
@@ -106,18 +95,6 @@ const char *get_unelevated_update_command(const char *pkgmgr) {
     unelevated_update_command = "softwareupdate --install --all";
 #endif
     return unelevated_update_command;
-}
-
-// function to build a update command accordingly with the elevator for the given pkgmgr
-const char *build_final_update_command(const char *pkgmgr) {
-    const char *unelevated_update_command = get_unelevated_update_command(pkgmgr);
-    if (!unelevated_update_command) {
-        return NULL;
-    }
-    if (getuid() == 0) /* running as root, no need to elevate. */ {
-        return unelevated_update_command;
-    } /* not running as root, elevate the command*/
-    return elevate_command(unelevated_update_command);
 }
 
 static inline const bool am_i_in_arch_or_a_derivative_or_otherwise_is_pacman_available() {
