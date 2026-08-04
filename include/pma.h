@@ -8,6 +8,8 @@
 #ifndef PMA_H
 #define PMA_H
 
+#define PMA_VERSION "0.2"
+
 #include <stdbool.h>
 
 #ifdef __linux__ /* linux (arch or derivatives) specific */
@@ -48,10 +50,9 @@ const char *get_unelevated_update_command(const char *pkgmgr);
 /* build the final update command, potentially elevating it if necessary */
 const char *build_final_update_command(const char *pkgmgr);
 
-#if 0 // unimplemented
-const char *package_install_command(const char *pkgmgr, const char *package_name);
-const char *package_remove_command(const char *pkgmgr, const char *package_name);
-#endif
+
+int package_install(const char *pkg_name, const char *from);
+int package_remove(const char *pkg_name);
 
 #ifndef PMA_C
 #include "../src/pma.c"

@@ -4,36 +4,48 @@
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
-
+#include <stdio.h>
+#include "../common_utils/process_utils.h"
 #include "../include/pma.h"
 
-const char *build_final_install_command(const char *system_package_manager, const char *package_name);
-
-str bare_install_command(const char *system_package_manager);
-
-int package_install(const char *package_name) {
-    const char *system_package_manager = determine_package_manager();
-
-    return 0;
+const char *get_unelevated_install_command(const char *pkgmgr) {
+    //TODO implement
 }
 
-static const char *unelevated_install_command(const char *system_package_manager, const char *package_name) {
-    str unelevated_install_command;
-    if (strcmp(determine_package_manager(), "pacman") == 0) {
-        unelevated_install_command = str_append(
-            bare_install_command("pacman"), str_create("pacman"));
-    }
-}
+int package_install(const char *pkg_name, const char *from) {
 
-str bare_install_command(const char *system_package_manager) {
-}
+    if (!pkg_name || !from) { return -1; }
 
-const char *build_final_install_command(const char *system_package_manager, const char *package_name) {
-    const char *final_install_command = NULL;
-    if (getuid() == 0) {
-        final_install_command = unelevated_install_command(system_package_manager, package_name);
+    if (strcmp(from, "flatpak") == 0) {
+        /* Install pkg from flatpak */
+    } else if (strcmp(from, "snap") == 0) {
+        /* Install pkg from snap */
+    } else if (strcmp(from, "system") == 0) {
+        /* Install using system packange manager*/
+        str install_command = str_create(get_unelevated_install_command(determine_package_manager()));
+        str_append(&install_command, pkg_name);
+        str_prepend(&install_command, determine_elevator());
+
+        char *out = NULL, *err = NULL; int status = -1;
+        if (run_command_via_exec(install_command.data, &out, &err, &status) == 0) {
+            print_command_output(out, err);
+            free(out);
+            free(err);
+            printf("-> Installed %s\n", pkg_name);
+        }
+
     } else {
-        final_install_command = elevate_command(unelevated_install_command(system_package_manager, package_name));
+        fprintf(stderr,
+        "Invalid 'from'. Can be 'flatpak', 'snap', or 'system'."
+        );
+        return -1;
     }
-    return final_install_command;
+
+    const char *pkgmgr = determine_package_manager();
+
+}
+
+
+int package_remove(const char *pkg_name) {
+
 }

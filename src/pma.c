@@ -1,11 +1,13 @@
 #include <unistd.h>
+#include <stdbool.h>
+#include <string.h>
 
 #include "../common_utils/elevate.h" // elevate()
 #include "../common_utils/have.h"    // command_exists()
 
 /* include elevate implementation so the single TU built by build.sh
     provides elevate_command() at link time */
-#include "../common_utils/src/elevate.c"
+//#include "../common_utils/src/elevate.c"
 
 /* determine the package manager(s) available. */
 const char *determine_package_manager() {
@@ -72,7 +74,7 @@ const char *get_unelevated_update_command(const char *pkgmgr) {
     /* linux system pkgmgrs */
 #if defined(__linux__)
     if (strcmp(pkgmgr, "pacman") == 0) {
-        unelevated_update_command = "pacman -Syu";
+        unelevated_update_command = "pacman -Syu --noconfirm";
     } else if (strcmp(pkgmgr, "apt") == 0) {
         unelevated_update_command = "apt-get update && apt-get dist-upgrade -y";
     } else if (strcmp(pkgmgr, "dnf") == 0) {
@@ -108,13 +110,17 @@ const char *get_unelevated_update_command(const char *pkgmgr) {
 
 // function to build a update command accordingly with the elevator for the given pkgmgr
 const char *build_final_update_command(const char *pkgmgr) {
+    const char *unelevated_update_command = get_unelevated_update_command(pkgmgr);
+    if (!unelevated_update_command) {
+        return NULL;
+    }
     if (getuid() == 0) /* running as root, no need to elevate. */ {
-        return get_unelevated_update_command(pkgmgr);
+        return unelevated_update_command;
     } /* not running as root, elevate the command*/
-    return elevate_command(get_unelevated_update_command(pkgmgr));
+    return elevate_command(unelevated_update_command);
 }
 
-static const bool am_i_in_arch_or_a_derivative_or_otherwise_is_pacman_available() {
+static inline const bool am_i_in_arch_or_a_derivative_or_otherwise_is_pacman_available() {
     if (strcmp(determine_package_manager(), "pacman") == 0) {
         return true; /* pacman is available so i must be */
     }
@@ -139,13 +145,4 @@ const char *get_aur_helper() {
         AUR_HELPER = "paru";
     }
     return AUR_HELPER;
-}
-
-/* Existing functions ^ update the system. Below, new functions to install/remove packages */
-
-const char *get_unelevated_install_command(const char *pkgmgr) {
-    const char *unelevated_install_command = NULL;
-#if defined(__linux__)
-
-#endif
 }

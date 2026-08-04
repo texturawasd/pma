@@ -1,35 +1,50 @@
 /*
- * sys_update
- * a tool to update the system in any system
- * texturawasd, june 2026
- * version 0.1: supports linux and FreeBSD
+ * pma - Package Manager Abstraction
+ * a tool to abstract package managers to a single tool in any system
+ * texturawasd, august 2026
+ * version 0.2: supports linux and FreeBSD
  * technically others too, but only tested on:
  * Arch Linux
+ * Alpine Linux
  * Ubuntu
  * FreeBSD
  */
 
 #include "../common_utils/args.h"
 #include "../common_utils/parsing_utils.h"
+#include "aux.c"
 #include "sys_update.c"
 #include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>
 
+/* Be lenient to idiots who may forget the commands of their package manager, such as myself */
+static const char *_update_list = "up,Up,update,Update,upgrade,Upgrade";
+static const char *_install_list = "add,Add,install,Install";
+static const char *_remove_list = "rem,Rem,remove,Remove,del,Del,delete,Delete,uninstall,Uninstall,R";
+
 int main(int argc, char **argv) {
 
+    do_args(argc, &*argv);
+
+    /* I'd rather not be ran as root */
     if (getuid() == 0 && !arg_is_present("i-know-what-i-am-doing", argc, argv)) {
         fprintf(stderr, "Running %s as root is not recommended. Pass --i-know-what-i-am-doing if you really do.\n", argv[0]);
         return -1;
     }
 
-    if (arg_is_present("update", argc, argv)) {
-        sys_update();
+    /* System update */
+    if (arg_is_in_list(argv[1], _update_list)) {
+        goto update;
         return 0;
-    } else if (arg_is_present("install", argc, argv)) {
+
+    /* Install a package*/
+    } else if (arg_is_in_list(argv[1], _install_list)) {
         fprintf(stderr, "Installing packages is not yet implemented, exiting.\n");
         return -1;
-    } else if (arg_is_present("remove", argc, argv)) {
+
+    /* Remove a package */
+    } else if (arg_is_in_list(argv[1], _remove_list)) {
         fprintf(stderr, "Removing packages is not yet implemented, exiting.\n");
         return -1;
     }
@@ -38,10 +53,13 @@ int main(int argc, char **argv) {
     puts("confirm to update the system? (y/n)");
     char response[420];
     scanf("%s", response);
-    if (parse_bool(response)) {
-        sys_update();
+    if (parse_bool(response) == true) {
+        goto update;
     } else {
         puts("aborting.");
+        exit(1);
     }
+    update:
+    sys_update();
     return 0;
 }
